@@ -4,16 +4,23 @@
 import re
 import uuid
 
+import os
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from mySpider.items import MyspiderItem
+from mySpider import settings
 import requests
 
 
 class WechatSpider(CrawlSpider):
     name = 'wechat'
     allowed_domains = ['weixin.sogou.com','mp.weixin.qq.com']
-    start_urls = ['http://weixin.sogou.com/weixin?type=2&query=中国']
+
+    start_urls = []
+    with open("微信公众号-定点跟踪.txt", 'r') as f:
+        for i in f.readlines():
+            start_urls.append('http://weixin.sogou.com/weixin?type=2&query=' + i.strip())
+
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36"}
 
     # # 每一页的匹配规则
@@ -64,3 +71,10 @@ class WechatSpider(CrawlSpider):
         print(item)
 
         yield item
+if __name__ == '__main__':
+    start_urls = []
+
+    with open("微信公众号-定点跟踪.txt", 'r') as f:
+        for i in f.readlines():
+            start_urls.append('http://weixin.sogou.com/weixin?type=2&query=' + i.strip().replace('\ufeff',''))
+    print(start_urls)
