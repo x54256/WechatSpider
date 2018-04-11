@@ -51,8 +51,6 @@ class Wechat2Spider(scrapy.Spider):
     # 数据解析方法，获取文章标题和内容
     def detail_parse(self, response):
         item = MyspiderItem()
-        # with open("1.html",'wb') as f:
-        #     f.write(response.body)
         # 标题
         item['title'] = response.xpath('//h2[@id="activity-name"]/text()').extract()[0].strip()
         # # 获取来源
@@ -82,7 +80,5 @@ class Wechat2Spider(scrapy.Spider):
             text = text.replace(src, "本地图片位置")
 
         item['content'] = text
-
-        print(item)
 
         yield item
