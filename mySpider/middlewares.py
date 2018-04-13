@@ -4,6 +4,7 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import random
 
 from scrapy import signals
 
@@ -158,17 +159,26 @@ class UAPOOLS(UserAgentMiddleware):
     ]
 """
 
+from mySpider.settings import IPPOOL
+
 import base64
 class ProxyMiddleware(object):
+    """
+    Scrapy代理（可以改为代理池）
+    """
     # overwrite process request
     def process_request(self, request, spider):
         # Set the location of the proxy
-        request.meta['proxy'] = "http://117.48.201.187:16816"
+        proxy = random.choice(IPPOOL)
 
-        print('正在使用 117.48.201.187:16816')
+        request.meta['proxy'] = "http://" + proxy['ip']
 
         # Use the following lines if your proxy requires authentication
-        proxy_user_pass = b"1228919065:lstvsmev"
+        proxy_user_pass = proxy['proxy_user_pass'].encode("utf-8")
+
+        print('正在使用：'+ proxy['ip'])
+
+
         # setup basic authentication for the proxy
         encoded_user_pass = base64.b64encode(proxy_user_pass).decode('utf-8')
         request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass

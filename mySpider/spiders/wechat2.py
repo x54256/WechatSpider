@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import base64
 import json
+import random
 import re
 import uuid
 
@@ -9,6 +11,7 @@ from pyvirtualdisplay import Display
 from selenium import webdriver
 
 from mySpider.items import MyspiderItem
+from mySpider.settings import IPPOOL
 
 
 class Wechat2Spider(scrapy.Spider):
@@ -20,11 +23,20 @@ class Wechat2Spider(scrapy.Spider):
         for i in f.readlines():
             start_urls.append('http://weixin.sogou.com/weixin?type=1&query=' + i.strip())
 
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36"}
+    # requests的请求头和代理
+    proxy = random.choice(IPPOOL)
+
+    proxies = {'http': 'http://' + proxy['ip']}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3386.1 Safari/537.36',
+        "Proxy-Authorization": "Basic %s" % base64.b64encode(proxy['proxy_user_pass'].encode("utf-8")),
+    }
+
     # 初始化浏览器
     display = Display(visible=0, size=(800, 600))  # 初始化屏幕
     display.start()
-    driver = webdriver.Chrome()  # 初始化ChromeDirver
+    driver = webdriver.PhantomJS()  # 初始化PhantomJS
+    # driver = webdriver.Chrome()  # 初始化ChromeDirver
 
     def parse(self, response):
 
@@ -35,8 +47,9 @@ class Wechat2Spider(scrapy.Spider):
         self.driver.get(url)
 
         html = self.driver.page_source
-        # self.driver.save_screenshot("test11111.png")
-
+        self.driver.save_screenshot("test.png")
+        # with open('1.html','wb') as f :
+        #     f.write(html.decode('utf-8'))
         text = re.search('msgList = (.*?)seajs', html, re.S).group(1).strip()
         str = text[0:-1]
         print(str)
@@ -54,8 +67,7 @@ class Wechat2Spider(scrapy.Spider):
         # 标题
         item['title'] = response.xpath('//h2[@id="activity-name"]/text()').extract()[0].strip()
         # # 获取来源
-        item['source'] = response.xpath('//a[@class="rich_media_meta rich_media_meta_link rich_media_meta_nickname"]/text()').extract()[
-            0]
+        item['source'] = response.xpath('//a[@class="rich_media_meta rich_media_meta_link rich_media_meta_nickname"]/text()').extract()[0]
         # 获取发布时间
         item['datetime'] = response.xpath('//em[@id="post-date"]/text()').extract()[0]
         # 获取内容
@@ -72,7 +84,7 @@ class Wechat2Spider(scrapy.Spider):
             src = re.search('data-src="(.*?)"', i, re.S).group(1).strip()
             # 4.下载图片
             # 图片原始数据
-            img = requests.get(src, headers=self.headers).content
+            img = requests.get(src,proxies=self.proxies, headers=self.headers).content
             # 写入到本地磁盘文件内
             with open("pic/"+ str(uuid.uuid1()) + ".jpg", 'wb') as f:
                 f.write(img)

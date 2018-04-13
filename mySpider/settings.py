@@ -147,3 +147,7 @@ LOG_LEVEL = 'DEBUG'
 
 #默认情况下,RFPDupeFilter只记录第一个重复请求。将DUPEFILTER_DEBUG设置为True会记录所有重复的请求。
 DUPEFILTER_DEBUG =True
+
+IPPOOL =  [
+    {'ip':'117.48.201.187:16816','proxy_user_pass':'1228919065:hstvsmev'}
+]

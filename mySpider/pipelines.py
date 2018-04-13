@@ -29,11 +29,11 @@ class MyspiderPipeline(object):
 
         """进行去重"""
         # 判断该数据的title是否存在redis中
-        flag = self.redis_cli.exists(item['title'])
+        flag = self.redis_cli.hexists("WECHATSET",item['title'])
         if not flag:
             # 不存在，插入mongo和redis中
             # redis
-            self.redis_cli.set(item['title'],str(data))
+            self.redis_cli.hset('WECHATSET',item['title'],str(data))
             # mongo 向指定的表里添加数据
             self.post.insert(data)
         return item
