@@ -52,7 +52,7 @@ class Wechat2Spider(scrapy.Spider):
         #     f.write(html.decode('utf-8'))
         text = re.search('msgList = (.*?)seajs', html, re.S).group(1).strip()
         str = text[0:-1]
-        print(str)
+        # print(str)
         jsonList = json.loads(str)['list']
 
         for i in jsonList:
@@ -85,11 +85,15 @@ class Wechat2Spider(scrapy.Spider):
             # 4.下载图片
             # 图片原始数据
             img = requests.get(src,proxies=self.proxies, headers=self.headers).content
+            # 有时会出现加代理img获取不到的情况，所以我们要判断一下，重新发送请求
+            if (not img):
+                img = requests.get(src).content
             # 写入到本地磁盘文件内
-            with open("pic/"+ str(uuid.uuid1()) + ".jpg", 'wb') as f:
+            imgName = str(uuid.uuid1()) + ".jpg"
+            with open("pic/"+ imgName, 'wb') as f:
                 f.write(img)
             # 5.将原图片的url修改成本地的
-            text = text.replace(src, "本地图片位置")
+            text = text.replace(src, imgName)
 
         item['content'] = text
 
